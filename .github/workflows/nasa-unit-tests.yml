@@ -1,7 +1,7 @@
 name: Nasa Unit Tests
 
 # This workflow will run on push events to the main branch and on pull requests
-#TODO: run locally [ act -W .github/workflows/nasa-unit-tests.yml ]
+#TODO: run locally [ act -W .github/workflows/nasa-unit-tests.yml ] or [./gradlew test --no-daemon]
 on:
   push:
     branches:
