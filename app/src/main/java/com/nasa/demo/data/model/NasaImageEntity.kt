@@ -7,9 +7,9 @@ import com.nasa.demo.domain.model.NasaImageUIItem
 @Entity(tableName = "images")
 data class NasaImageEntity(
     @PrimaryKey val id: Int,
-    val title: String,
-    val imageUrl: String,
-    val earthDate: String,
+    val title: String = "",
+    val imageUrl: String = "",
+    val earthDate: String = "",
     val isFavorite: Boolean = false
 )
 

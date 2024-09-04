@@ -109,6 +109,15 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.turbine)
+    // Coroutines Core
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0") // Check for latest version
+
+// Coroutines Android
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.0") // Check for latest version
+
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.core.testing)
 }

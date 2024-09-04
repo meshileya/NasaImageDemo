@@ -1,0 +1,57 @@
+name: Nasa Unit Tests
+
+# This workflow will run on push events to the main branch and on pull requests
+#TODO: run locally [ act -W .github/workflows/nasa-unit-tests.yml ]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+
+    # The job will run on the latest Ubuntu environment
+    runs-on: ubuntu-latest
+
+    # The job strategy to run tests on multiple versions of Java
+    strategy:
+      matrix:
+        java-version: [11, 17]
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up JDK (Java Development Kit) for the job
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt' # Install AdoptOpenJDK distribution
+          java-version: ${{ matrix.java-version }}
+
+      # Cache Gradle dependencies to speed up the build process
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Run the unit tests using Gradle
+      - name: Run Unit Tests
+        run: ./gradlew test --no-daemon
+
+      # Optionally, you can also publish test results
+      - name: Publish Test Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: build/test-results/test
