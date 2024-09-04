@@ -1,6 +1,11 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.jetbrainsKotlinAndroid)
+    kotlin("kapt")
+    alias(libs.plugins.kotlinParcelize)
+    alias(libs.plugins.navigation.safeargs.kotlin)
+    alias(libs.plugins.daggerHilt)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -15,6 +20,16 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        signingConfig = signingConfigs.getByName("debug")
+        buildConfigField(
+            "String", "BASE_URL", "\"https://api.nasa.gov/mars-photos/api/v1/\""
+        )
+        buildConfigField(
+            "int", "TIMEOUT_SECONDS", "10"
+        )
+        buildConfigField(
+            "String", "API_KEY", "\"Up349dhURITqO3zuA4VU345doazzcsOwCxO9mbrv\""
+        )
     }
 
     buildTypes {
@@ -33,14 +48,76 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
+    buildFeatures {
+        buildConfig = true
+        viewBinding = true
+        compose = true
+    }
+
+    dataBinding {
+        addKtx = true
+    }
 }
 
 dependencies {
-
+//UI
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
+    implementation(libs.androidx.swiperefreshlayout)
+    //UI [compose]
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.material)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    //Lifecycle
+    implementation(libs.lifecycle)
+    //Navigation
+    implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.navigation.fragment)
+    //DI
+    implementation(libs.dagger.hilt.android)
+    implementation(libs.androidx.fragment.testing)
+    implementation(libs.androidx.runtime.livedata)
+    kapt(libs.dagger.hilt.android.compiler)
+    //circular imageview
+    implementation(libs.circleimageview)
+    //cache image
+    implementation(libs.glide)
+    annotationProcessor(libs.compiler)
+    //Network
+    implementation(libs.adapter.rxjava)
+    implementation(libs.logging.interceptor)
+    implementation(libs.okhttp)
+    implementation(libs.converter.scalars)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.retrofit2.kotlin.coroutines.adapter)
+    // Room for local caching
+    implementation(libs.androidx.room.runtime)
+    kapt(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+    // Paging
+    implementation(libs.androidx.paging.runtime)
+    //Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.turbine)
+    // Coroutines Core
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0") // Check for latest version
+
+// Coroutines Android
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.0") // Check for latest version
+
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.core.testing)
 }
