@@ -38,9 +38,12 @@ class FragmentNasaMain : Fragment() {
 
     private val imagesAdapter: NasaImageAdapter by lazy {
         NasaImageAdapter { image ->
+            val action = if (image.isFavorite) "add to" else "remove from"
+            val message = "Are you sure you want to $action your favorites?"
+
             AlertDialog.Builder(requireContext())
                 .setTitle("Confirm Action")
-                .setMessage("Are you sure you want to ${if (image.isFavorite) "remove" else "add"} this item to your favorites?")
+                .setMessage(message)
                 .setPositiveButton("Yes") { _, _ ->
                     viewModel.toggleFavorite(image)
                 }
