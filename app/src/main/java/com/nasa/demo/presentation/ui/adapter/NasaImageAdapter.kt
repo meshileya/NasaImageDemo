@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
+import androidx.paging.filter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -14,6 +15,8 @@ import com.nasa.demo.domain.model.NasaImageUIItem
 class NasaImageAdapter(
     private val onItemClick: (NasaImageUIItem) -> Unit
 ) : PagingDataAdapter<NasaImageUIItem, NasaImageAdapter.NasaImageViewHolder>(DIFF_CALLBACK) {
+
+    private var currentQuery: String = ""
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NasaImageViewHolder {
         val binding = ListingImagesBinding.inflate(
@@ -28,6 +31,17 @@ class NasaImageAdapter(
         getItem(position)?.let { item ->
             holder.bind(item)
         }
+    }
+
+    suspend fun submitDataWithFilter(pagingData: PagingData<NasaImageUIItem>) {
+        val filteredData = pagingData.filter { item ->
+            item.title.contains(currentQuery, ignoreCase = true)
+        }
+        submitData(filteredData)
+    }
+
+    fun updateQuery(query: String) {
+        currentQuery = query
     }
 
     class NasaImageViewHolder(

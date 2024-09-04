@@ -69,6 +69,7 @@ class FragmentNasaMain : Fragment() {
         setupRecyclerViews()
         observeViewModel()
         setupRefreshLayout()
+        setupSearchQueryListener()
         observeLoadState()
     }
 
@@ -120,6 +121,22 @@ class FragmentNasaMain : Fragment() {
                 handleErrorState(loadStates)
             }
         }
+    }
+
+    private fun setupSearchQueryListener(){
+        binding.searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {}
+            override fun beforeTextChanged(
+                s: CharSequence?, start: Int, count: Int, after: Int
+            ) {
+            }
+
+            override fun onTextChanged(
+                s: CharSequence, start: Int, before: Int, count: Int
+            ) {
+                viewModel.updateQuery(binding.searchEditText.text.toString())
+            }
+        })
     }
 
     private fun handleEmptyState(loadStates: CombinedLoadStates) {

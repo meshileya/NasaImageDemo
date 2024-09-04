@@ -8,6 +8,7 @@ import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.filter
 import com.nasa.demo.domain.model.NasaImageUIItem
 import com.nasa.demo.domain.usecase.GetImagesUseCase
 import com.nasa.demo.domain.usecase.ToggleFavoriteUseCase
@@ -15,8 +16,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
@@ -36,7 +41,7 @@ class NasaImageViewModel @Inject constructor(
     private val _exceptionMessage = MutableLiveData<String>()
     val exceptionMessage: LiveData<String> get() = _exceptionMessage
 
-//    private val _refreshTrigger = MutableStateFlow(Unit)
+    //    private val _refreshTrigger = MutableStateFlow(Unit)
 //    private val _refreshTrigger = MutableSharedFlow<Unit>(replay = 0)
     private val _refreshTrigger = MutableSharedFlow<Unit>(replay = 1).apply {
         tryEmit(Unit)
@@ -58,20 +63,34 @@ class NasaImageViewModel @Inject constructor(
         )
     }
 
+    private var currentQuery: String = ""
+
     // Combined Flow for images with refresh trigger handling
     @OptIn(ExperimentalCoroutinesApi::class)
     val images: Flow<PagingData<NasaImageUIItem>> = _refreshTrigger
         .flatMapLatest {
             getImagesUseCase.invoke()
+                .map { pagingData ->
+                    pagingData.filter { item ->
+                        item.id.toString().contains(
+                            currentQuery,
+                            ignoreCase = true
+                        )
+                    }
+                }
                 .onStart { _isLoading.value = true } // Set loading state before data is fetched
                 .onEach { _isLoading.value = false } // Reset loading state after data is fetched
-
                 .catch { exception ->
                     _exceptionMessage.value = "An error occurred: ${exception.message}"
                     emit(PagingData.empty()) // Provide fallback for error state
                 }
         }
         .cachedIn(viewModelScope)
+
+    fun updateQuery(query: String) {
+        currentQuery = query
+        refresh() // Trigger a refresh to apply the new query
+    }
 
     fun refresh() {
         viewModelScope.launch {
