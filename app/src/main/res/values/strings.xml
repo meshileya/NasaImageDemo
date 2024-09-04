@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">NasaImageDemo</string>
+    <string name="empty_state">No data currently available</string>
+    <string name="earth_id">ID: %1$s</string>
+    <string name="add_new">Add New</string>
+    <string name="favorite">favorite</string>
+    <string name="search_by_id">Search by ID</string>
 </resources>
