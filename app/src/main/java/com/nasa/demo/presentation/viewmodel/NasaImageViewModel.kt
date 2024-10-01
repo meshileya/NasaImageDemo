@@ -1,5 +1,6 @@
 package com.nasa.demo.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,6 +13,7 @@ import androidx.paging.filter
 import com.nasa.demo.domain.model.NasaImageUIItem
 import com.nasa.demo.domain.usecase.GetImagesUseCase
 import com.nasa.demo.domain.usecase.ToggleFavoriteUseCase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -41,17 +44,18 @@ class NasaImageViewModel @Inject constructor(
     private val _exceptionMessage = MutableLiveData<String>()
     val exceptionMessage: LiveData<String> get() = _exceptionMessage
 
-    //    private val _refreshTrigger = MutableStateFlow(Unit)
+    //
+//        private val _refreshTrigger = MutableStateFlow<Unit>(Unit)
 //    private val _refreshTrigger = MutableSharedFlow<Unit>(replay = 0)
     private val _refreshTrigger = MutableSharedFlow<Unit>(replay = 1).apply {
         tryEmit(Unit)
     }
 
     init {
-        _isLoading.value = true
+//        _isLoading.value = true
     }
 
-    // Flow for favorite images
+
     val favoriteImages: LiveData<List<NasaImageUIItem>> = liveData {
         emitSource(
             getImagesUseCase.invokeFavorite()
@@ -71,19 +75,20 @@ class NasaImageViewModel @Inject constructor(
         .flatMapLatest {
             getImagesUseCase.invoke()
                 .map { pagingData ->
-                    pagingData.filter { item ->
-                        item.id.toString().contains(
-                            currentQuery,
-                            ignoreCase = true
-                        )
+                    if (currentQuery.isNotEmpty()) {
+                        pagingData.filter { item ->
+                            item.id.toString().contains(currentQuery, ignoreCase = true)
+                        }
+                    } else {
+                        pagingData
                     }
                 }
-                .onStart { _isLoading.value = true } // Set loading state before data is fetched
-                .onEach { _isLoading.value = false } // Reset loading state after data is fetched
+                .onStart { _isLoading.postValue(true) } // Set loading state before data is fetched
+                .onEach { _isLoading.postValue(false) } // Reset loading state after data is fetched
                 .catch { exception ->
-                    _exceptionMessage.value = "An error occurred: ${exception.message}"
+                    _exceptionMessage.postValue("An error occurred: ${exception.message}")
                     emit(PagingData.empty()) // Provide fallback for error state
-                }
+                }.flowOn(Dispatchers.IO)
         }
         .cachedIn(viewModelScope)
 
